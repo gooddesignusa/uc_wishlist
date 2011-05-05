@@ -1,0 +1,732 @@
+diff --git a/uc_order-wishlist.tpl.php b/uc_order-wishlist.tpl.php
+new file mode 100644
+index 0000000..6b7e725
+--- /dev/null
++++ b/uc_order-wishlist.tpl.php
+@@ -0,0 +1,325 @@
++<?php
++// $Id: uc_order-customer.tpl.php,v 1.1.2.1 2010/07/16 15:45:09 islandusurper Exp $
++
++/**
++ * @file
++ * This file is the default customer invoice template for Ubercart.
++ */
++?>
++
++<table width="95%" border="0" cellspacing="0" cellpadding="1" align="center" bgcolor="#006699" style="font-family: verdana, arial, helvetica; font-size: small;">
++  <tr>
++    <td>
++      <table width="100%" border="0" cellspacing="0" cellpadding="5" align="center" bgcolor="#FFFFFF" style="font-family: verdana, arial, helvetica; font-size: small;">
++        <?php if ($business_header) { ?>
++        <tr valign="top">
++          <td>
++            <table width="100%" style="font-family: verdana, arial, helvetica; font-size: small;">
++              <tr>
++                <td>
++                  <?php echo $site_logo; ?>
++                </td>
++                <td width="98%">
++                  <div style="padding-left: 1em;">
++                  <span style="font-size: large;"><?php echo $store_name; ?></span><br />
++                  <?php echo $site_slogan; ?>
++                  </div>
++                </td>
++                <td nowrap="nowrap">
++                  <?php echo $store_address; ?><br /><?php echo $store_phone; ?>
++                </td>
++              </tr>
++            </table>
++          </td>
++        </tr>
++        <?php } ?>
++
++        <tr valign="top">
++          <td>
++
++            <?php if ($thank_you_message) { ?>
++            <p><b><?php echo t('Thanks for your order, !order_first_name!', array('!order_first_name' => $order_first_name)); ?></b></p>
++
++            <?php if (isset($_SESSION['new_user'])) { ?>
++            <p><b><?php echo t('An account has been created for you with the following details:'); ?></b></p>
++            <p><b><?php echo t('Username:'); ?></b> <?php echo $new_username; ?><br />
++            <b><?php echo t('Password:'); ?></b> <?php echo $new_password; ?></p>
++            <?php } ?>
++
++            <p><b><?php echo t('Want to manage your order online?'); ?></b><br />
++            <?php echo t('If you need to check the status of your order, please visit our home page at !store_link and click on "My account" in the menu or login with the following link:', array('!store_link' => $store_link)); ?>
++            <br /><br /><?php echo $site_login; ?></p>
++            <?php } ?>
++
++            <table cellpadding="4" cellspacing="0" border="0" width="100%" style="font-family: verdana, arial, helvetica; font-size: small;">
++              <tr>
++                <td colspan="2" bgcolor="#006699" style="color: white;">
++                  <b><?php echo t('Purchasing Information:'); ?></b>
++                </td>
++              </tr>
++              <tr>
++                <td nowrap="nowrap">
++                  <b><?php echo t('E-mail Address:'); ?></b>
++                </td>
++                <td width="98%">
++                  <?php echo $order_email; ?>
++                </td>
++              </tr>
++              <tr>
++                <td colspan="2">
++
++                  <table width="100%" cellspacing="0" cellpadding="0" style="font-family: verdana, arial, helvetica; font-size: small;">
++                    <tr>
++                      <td valign="top" width="50%">
++                        <b><?php echo t('Billing Address:'); ?></b><br />
++                        <?php echo $order_billing_address; ?><br />
++                        <br />
++                        <b><?php echo t('Billing Phone:'); ?></b><br />
++                        <?php echo $order_billing_phone; ?><br />
++                      </td>
++                      <?php if (uc_order_is_shippable($order)) { ?>
++                      <td valign="top" width="50%">
++                        <b><?php echo t('Shipping Address:'); ?></b><br />
++                        <?php
++                          $o = $order;
++                          // Get order address for comparison.
++                          $map = array(
++                            'firstname' => $o->delivery_first_name,
++                            'lastname' => $o->delivery_last_name,
++                            'company' => $o->delivery_company,
++                            'addr1' => $o->delivery_street1,
++                            'addr2' => $o->delivery_street2,
++                            'city' => $o->delivery_city,
++                            'country' => $o->delivery_country,
++                            'zone' => $o->delivery_zone,
++                            'postcode' => $o->delivery_postal_code,
++                            'phone' => $o->delivery_phone,
++                          );
++                          $o_address = serialize((object)$map);
++                          // Get wishlist address for comparison.
++                          foreach ($o->products as $key => $item) {
++                            if ($item->data['wid']) {
++                              $wid = $item->data['wid'];
++                              $w = uc_wishlist_load($wid);
++                              $w_address = serialize($w->address);
++                            }
++                          }
++                          // Compare addresses.
++                          if ($w_address == $o_address) {
++                            // Print friendly label.
++                            echo t('[Address from !title]', array('!title' => $w->title));
++                            // Set variable.
++                            $wishlist_address = TRUE;
++                          }
++                        ?>
++                        <?php if (!isset($wishlist_address)) { ?>
++                          <?php echo $order_shipping_address; ?><br />
++                          <br />
++                          <b><?php echo t('Shipping Phone:'); ?></b><br />
++                          <?php echo $order_shipping_phone; ?><br />
++                        <?php } ?>
++                      </td>
++                      <?php } ?>
++                    </tr>
++                  </table>
++
++                </td>
++              </tr>
++              <tr>
++                <td nowrap="nowrap">
++                  <b><?php echo t('Order Grand Total:'); ?></b>
++                </td>
++                <td width="98%">
++                  <b><?php echo $order_total; ?></b>
++                </td>
++              </tr>
++              <tr>
++                <td nowrap="nowrap">
++                  <b><?php echo t('Payment Method:'); ?></b>
++                </td>
++                <td width="98%">
++                  <?php echo $order_payment_method; ?>
++                </td>
++              </tr>
++
++              <tr>
++                <td colspan="2" bgcolor="#006699" style="color: white;">
++                  <b><?php echo t('Order Summary:'); ?></b>
++                </td>
++              </tr>
++
++              <?php if (uc_order_is_shippable($order)) { ?>
++              <tr>
++                <td colspan="2" bgcolor="#EEEEEE">
++                  <font color="#CC6600"><b><?php echo t('Shipping Details:'); ?></b></font>
++                </td>
++              </tr>
++              <?php } ?>
++
++              <tr>
++                <td colspan="2">
++
++                  <table border="0" cellpadding="1" cellspacing="0" width="100%" style="font-family: verdana, arial, helvetica; font-size: small;">
++                    <tr>
++                      <td nowrap="nowrap">
++                        <b><?php echo t('Order #:'); ?></b>
++                      </td>
++                      <td width="98%">
++                        <?php echo $order_link; ?>
++                      </td>
++                    </tr>
++
++                    <tr>
++                      <td nowrap="nowrap">
++                        <b><?php echo t('Order Date: '); ?></b>
++                      </td>
++                      <td width="98%">
++                        <?php echo $order_date_created; ?>
++                      </td>
++                    </tr>
++
++                    <?php if ($shipping_method && uc_order_is_shippable($order)) { ?>
++                    <tr>
++                      <td nowrap="nowrap">
++                        <b><?php echo t('Shipping Method:'); ?></b>
++                      </td>
++                      <td width="98%">
++                        <?php echo $order_shipping_method; ?>
++                      </td>
++                    </tr>
++                    <?php } ?>
++
++                    <tr>
++                      <td nowrap="nowrap">
++                        <?php echo t('Products Subtotal:'); ?>&nbsp;
++                      </td>
++                      <td width="98%">
++                        <?php echo $order_subtotal; ?>
++                      </td>
++                    </tr>
++
++                    <?php
++                    $context = array(
++                      'revision' => 'themed',
++                      'type' => 'line_item',
++                      'subject' => array(
++                        'order' => $order,
++                      ),
++                    );
++                    foreach ($line_items as $item) {
++                    if ($item['line_item_id'] == 'subtotal' || $item['line_item_id'] == 'total') {
++                      continue;
++                    }?>
++
++                    <tr>
++                      <td nowrap="nowrap">
++                        <?php echo $item['title']; ?>:
++                      </td>
++                      <td>
++                        <?php
++                          $context['subject']['line_item'] = $item;
++                          echo uc_price($item['amount'], $context);
++                        ?>
++                      </td>
++                    </tr>
++
++                    <?php } ?>
++
++                    <tr>
++                      <td>&nbsp;</td>
++                      <td>------</td>
++                    </tr>
++
++                    <tr>
++                      <td nowrap="nowrap">
++                        <b><?php echo t('Total for this Order:'); ?>&nbsp;</b>
++                      </td>
++                      <td>
++                        <b><?php echo $order_total; ?></b>
++                      </td>
++                    </tr>
++
++                    <tr>
++                      <td colspan="2">
++                        <br /><br /><b><?php echo t('Products on order:'); ?>&nbsp;</b>
++
++                        <table width="100%" style="font-family: verdana, arial, helvetica; font-size: small;">
++
++                          <?php if (is_array($order->products)) {
++                            $context = array(
++                              'revision' => 'formatted',
++                              'type' => 'order_product',
++                              'subject' => array(
++                                'order' => $order,
++                              ),
++                            );
++                            foreach ($order->products as $product) {
++                              $price_info = array(
++                                'price' => $product->price,
++                                'qty' => $product->qty,
++                              );
++                              $context['subject']['order_product'] = $product;
++                              $context['subject']['node'] = node_load($product->nid);
++                              ?>
++                          <tr>
++                            <td valign="top" nowrap="nowrap">
++                              <b><?php echo $product->qty; ?> x </b>
++                            </td>
++                            <td width="98%">
++                              <b><?php echo $product->title .' - '. uc_price($price_info, $context); ?></b>
++                              <?php if ($product->qty > 1) {
++                                $price_info['qty'] = 1;
++                                echo t('(!price each)', array('!price' => uc_price($price_info, $context)));
++                              } ?>
++                              <br />
++                              <?php echo t('SKU: ') . $product->model; ?><br />
++                              <?php if (is_array($product->data['attributes']) && count($product->data['attributes']) > 0) {?>
++                              <?php foreach ($product->data['attributes'] as $attribute => $option) {
++                                echo '<li>'. t('@attribute: @options', array('@attribute' => $attribute, '@options' => implode(', ', (array)$option))) .'</li>';
++                              } ?>
++                              <?php } ?>
++                              <br />
++                            </td>
++                          </tr>
++                          <?php }
++                              }?>
++                        </table>
++
++                      </td>
++                    </tr>
++                  </table>
++
++                </td>
++              </tr>
++
++              <?php if ($help_text || $email_text || $store_footer) { ?>
++              <tr>
++                <td colspan="2">
++                  <hr noshade="noshade" size="1" /><br />
++
++                  <?php if ($help_text) { ?>
++                  <p><b><?php echo t('Where can I get help with reviewing my order?'); ?></b><br />
++                  <?php echo t('To learn more about managing your orders on !store_link, please visit our <a href="!store_help_url">help page</a>.', array('!store_link' => $store_link, '!store_help_url' => $store_help_url)); ?>
++                  <br /></p>
++                  <?php } ?>
++
++                  <?php if ($email_text) { ?>
++                  <p><?php echo t('Please note: This e-mail message is an automated notification. Please do not reply to this message.'); ?></p>
++
++                  <p><?php echo t('Thanks again for shopping with us.'); ?></p>
++                  <?php } ?>
++
++                  <?php if ($store_footer) { ?>
++                  <p><b><?php echo $store_link; ?></b><br /><b><?php echo $site_slogan; ?></b></p>
++                  <?php } ?>
++                </td>
++              </tr>
++              <?php } ?>
++
++            </table>
++          </td>
++        </tr>
++      </table>
++    </td>
++  </tr>
++</table>
+diff --git a/uc_wishlist.admin.inc b/uc_wishlist.admin.inc
+index fe6308c..3bd50c3 100644
+--- a/uc_wishlist.admin.inc
++++ b/uc_wishlist.admin.inc
+@@ -22,6 +22,12 @@ function uc_wishlist_admin_settings_form() {
+     '#default_value' => variable_get('uc_wishlist_allow_anonymous', FALSE),
+     '#description' => t('Check this box to allow anonymous users to create wish lists. If not checked, anonymous visitors will be prompted to login or register before creating a wish list.'),
+   );
++  $form['uc_wishlist_address_privacy'] = array(
++    '#type' => 'checkbox',
++    '#title' => t('Keep wishlist user address information private.'),
++    '#default_value' => variable_get('uc_wishlist_address_privacy', TRUE),
++    '#description' => t('Check this box to hide wishlist user address information during checkout, checkout review, order history, printable invoice, and email template.'),
++  );
+ 
+   // TODO: add uc_wishlist_default_length
+ 
+diff --git a/uc_wishlist.js b/uc_wishlist.js
+index 71f2561..9fdf146 100644
+--- a/uc_wishlist.js
++++ b/uc_wishlist.js
+@@ -1,10 +1,8 @@
+-
+ /**
+  * @file
+  * Small helper JS for the wish list settings form address.
+  */
+ 
+-
+ /**
+  * Apply the selected address to the appropriate fields in the cart form.
+  */
+@@ -34,4 +32,3 @@ function apply_address(type, address_str) {
+ 
+   $('#edit-' + type + '-zone').val(address.zone).trigger('change');
+ }
+-
+diff --git a/uc_wishlist.module b/uc_wishlist.module
+index 84066e2..321798b 100644
+--- a/uc_wishlist.module
++++ b/uc_wishlist.module
+@@ -223,6 +223,18 @@ function uc_wishlist_user($op, &$edit, &$user, $category = NULL) {
+         db_query("UPDATE {uc_wishlists} SET uid = %d WHERE wid = %d", $user->uid, $oldwid);
+       }
+       break;
++    case 'load':
++      $res = db_query("SELECT ucop.order_id, ucwlp.nid, ucwl.wid, ucwl.address
++        FROM {uc_orders} uco
++        JOIN {uc_order_products} ucop ON uco.order_id = ucop.order_id
++        JOIN {uc_wishlist_products} ucwlp ON ucop.nid = ucwlp.nid
++        JOIN {uc_wishlists} ucwl ON ucwlp.wid = ucwl.wid
++        WHERE uco.uid = %d", $user->uid);
++      $items = array();
++      while ($obj = db_fetch_object($res)) {
++        $user->wishlist[$obj->order_id] = $obj;
++      }
++      break;
+     case 'view':
+       $res = db_query("SELECT * FROM {uc_wishlists} WHERE uid = %d", $user->uid);
+       $items = array();
+@@ -268,37 +280,142 @@ function uc_wishlist_form_alter(&$form, &$form_state, $form_id) {
+       '#submit' => array('uc_wishlist_add_to_wishlist_submit'),
+     );
+   }
++    
++  switch ($form_id) {
++    // @todo find a better identifier than $_SESSION['cart_order']. Because this 
++    // is set after going 'back' from cart review.
++    #if ($form_id == 'uc_cart_checkout_form' && !isset($_SESSION['cart_order'])) {
++    case 'uc_cart_checkout_form':
++      // Hide previously saved wishlist addresses from the address selector.
++
++      // Load user wishlist addresses.
++      global $user;
++      $account = user_load($user->uid);
++      $uwishlists = $account->wishlist;
++      if (!empty($uwishlists)) {
++        foreach($uwishlists as $order_id => $uwishlist) {
++          // Build array of addresses.
++          $uwishlist_addresses[$order_id] = $uwishlist->address;
++        }
++      }
++      // Clean up array.
++      $uwishlist_addresses = array_unique($uwishlist_addresses);
++
++      // Get uc_order saved addresses.
++      // Choose this over uc_get_addresses() to be certain of the array position.
++      $options = $form['panes']['delivery']['delivery_address_select']['#options'];
++      // Remove "Please select".
++      unset($options[0]);
++      if (!empty($options)) {
++        foreach($options as $js_option => $label) {
++          // Consider using json_decode().
++          $address = json_decode($js_option);
++          $map = array(
++            'firstname' => $address->first_name,
++            'lastname' => $address->last_name,
++            'company' => $address->company,
++            'addr1' => $address->street1,
++            'addr2' => $address->street2,
++            'city' => $address->city,
++            'country' => $address->country,
++            'zone' => $address->zone,
++            'postcode' => $address->postal_code,
++            'phone' => $address->phone,
++          );
++          // Make the array into a matching object, and serialize.
++          $ucsaved_addresses[$id] = serialize((object)$map);
++          // Compare user wishlist addresses with uc saved addresses.
++          if (in_array($ucsaved_addresses[$id], $uwishlist_addresses)) {
++            unset($form['panes']['delivery']['delivery_address_select']['#options'][$js_option]);
++          }
++        }
++      }
++      // Remove address selector if there are no options.
++      if (count($form['panes']['delivery']['delivery_address_select']['#options']) == 1) {
++        unset($form['panes']['delivery']['delivery_address_select']);
++      }
+ 
+-  if ($form_id == 'uc_cart_checkout_form' && !isset($_SESSION['cart_order'])) {
+-    $items = unserialize($form['cart_contents']['#value']);
+-    $wids = array();
+-
+-    foreach ($items as $item) {
+-      if ($item->data['wid']) {
+-        $wids[] = $item->data['wid'];
++      $items = unserialize($form['cart_contents']['#value']);
++      $wids = array();
++  
++      foreach ($items as $item) {
++        if ($item->data['wid']) {
++          $wids[] = $item->data['wid'];
++        }
++      }
++      $wids = array_unique($wids);
++  
++      if (count($wids) > 1) {
++        drupal_set_message(t('This order contains items from multiple wish lists. It is not possible to automatically address this order for its recipient.'));
+       }
++      else if (count($wids) == 1) {
++        $wishlist = uc_wishlist_load($wids[0]);
++  
++        if (!empty($wishlist->address->firstname) && !empty($wishlist->address->lastname) && !empty($wishlist->address->addr1) && !empty($wishlist->address->postcode)) {
++  
++          $message = t('This order contains items from a wish list. The delivery address has been automatically set to the preferred address from the wish list.');
++          
++          // Check privacy options.
++          // @todo consider whether this could be considered a security risk. For now,
++          // opt to keep existing fucntionality as an option. Address privacy is TRUE by default.
++          if (variable_get('uc_wishlist_address_privacy', TRUE)) {
++            // Hide the shipping fields until revealed by our custom checkbox and js.
++            // Since we're hiding default fields until triggered, do not use #attributes. 
++            drupal_add_js(drupal_get_path('module', 'uc_wishlist') . '/uc_wishlist_checkout.js');
++            // Trick Ubercart into adding our checkbox, since there's not a decent hook
++            // and so we don't have to add a custom address pane.
++            $form['panes']['delivery']['copy_address'] = array(
++              '#type' => 'checkbox', 
++              '#title' => t('Add a custom delivery address (defaults to wishlist address).'),
++            );
++            foreach(element_children($form['panes']['delivery']) as $element) {
++              if ($form['panes']['delivery'][$element]['#required'] == TRUE) {
++                // Unset required, & set class with #attribute, passing validation to our own validator instead.
++                unset($form['panes']['delivery'][$element]['#required']);
++                // Add our own validation flag, so we can see if custom checkbox is selected.
++                $form['panes']['delivery'][$element]['#required_field'] = TRUE;
++                // @todo add class back, so users can see it's required.
++                // This doesn't work becasue of the way the form is themed.
++                #$form['panes']['delivery'][$element]['#attributes'] = array('class' => 'required');
++              }
++            }
++            // Add custom validation.
++            $form['#validate'][] = 'uc_wishlist_checkout_form_validate';
++          }
++          else {
++            // Wishlist user address information is not configured to be private.
++            // Append appropriate directions.
++            $message .= ' '. t('You may change this address.');
++          }
++          // Set the appropriate message, based on privacy options, but only on checkout form.
++          drupal_set_message($message);
++        }
++        break;
+     }
+-    $wids = array_unique($wids);
++  }
++}
+ 
+-    if (count($wids) > 1) {
+-      drupal_set_message(t('This order contains items from multiple wish lists. It is not possible to automatically address this order for its recipient.'));
++/**
++ * Custom validation for uc_cart_checkout_form.
++ */
++function uc_wishlist_checkout_form_validate($form, &$form_state) {
++  $values = $form_state['values'];  
++  $custom_address = $values['panes']['delivery']['copy_address'];
++  $exclude = array('delivery_address_select', 'copy_address');
++  foreach(element_children($form['panes']['delivery']) as $element) {        
++    // Check if our custom address box is selected.
++    if ($custom_address) {
++      // Unset custom address $_SESSION variable.
++      unset($_SESSION['wishlist']['custom_address']);
++      // Validate our custom #required_field.
++      if (empty($values['panes']['delivery'][$element]) && $form['panes']['delivery'][$element]['#required_field'] == TRUE) {
++        form_set_error('panes][delivery]['. $element, t('Delivery !name field is required.', array('!name' => $form['panes']['delivery'][$element]['#title'])));
++      }
+     }
+-    else if (count($wids) == 1) {
+-      $wishlist = uc_wishlist_load($wids[0]);
+-
+-      if (!empty($wishlist->address->firstname) && !empty($wishlist->address->lastname) && !empty($wishlist->address->addr1) && !empty($wishlist->address->postcode)) {
+-        $form['panes']['delivery']['delivery_first_name']['#default_value'] = $wishlist->address->firstname;
+-        $form['panes']['delivery']['delivery_last_name']['#default_value'] = $wishlist->address->lastname;
+-        $form['panes']['delivery']['delivery_company']['#default_value'] = $wishlist->address->company;
+-        $form['panes']['delivery']['delivery_street1']['#default_value'] = $wishlist->address->addr1;
+-        $form['panes']['delivery']['delivery_street2']['#default_value'] = $wishlist->address->addr2;
+-        $form['panes']['delivery']['delivery_city']['#default_value'] = $wishlist->address->city;
+-        $form['panes']['delivery']['delivery_country']['#default_value'] = $wishlist->address->country;
+-        $form['panes']['delivery']['delivery_zone']['#default_value'] = $wishlist->address->zone;
+-        $form['panes']['delivery']['delivery_postal_code']['#default_value'] = $wishlist->address->postcode;
+-        $form['panes']['delivery']['delivery_phone']['#default_value'] = $wishlist->address->phone;
+-
+-        drupal_set_message(t('This order contains items from a wish list. The delivery address has been automatically set to the preferred address from the wish list. You may change this address.'));
++    else {
++      if (!in_array($element, $exclude)) {
++        // Set a session variable. @see uc_wishlist_order().
++        $_SESSION['wishlist']['custom_address'] = TRUE;
+       }
+     }
+   }
+@@ -372,32 +489,84 @@ function uc_wishlist_cart_item($op, &$item) {
+  * updated with the additional purchases.
+  */
+ function uc_wishlist_order($op, &$arg1, $arg2) {
+-  if ($op == 'update') {
+-    if (uc_order_status_data($arg1->order_status, 'state') != 'in_checkout' || uc_order_status_data($arg2, 'state') == 'in_checkout' || uc_order_status_data($arg2, 'state') == 'canceled') {
+-      return;
+-    }
+-    $o = $arg1;
+-    foreach ($o->products as $key => $item) {
+-      if ($item->data['wid'] && $item->data['wpid'] && !isset($item->data['wset'])) {
+-        $wid = $item->data['wid'];
+-        $wpid = $item->data['wpid'];
+-        $w = uc_wishlist_load($wid);
+-        $witem = uc_wishlist_get_product($wpid);
+-        $purchase = array(
+-          'order_id' => $item->order_id,
+-          'order_product_id' => $item->order_product_id,
+-          'uid' => $o->uid,
+-          'date' => time(),
+-        );
+-        for ($i=0; $i<$item->qty; $i++) {
+-          $witem->purchase[] = $purchase;
++  switch ($op) {
++    case 'update':
++      if (uc_order_status_data($arg1->order_status, 'state') != 'in_checkout' || uc_order_status_data($arg2, 'state') == 'in_checkout' || uc_order_status_data($arg2, 'state') == 'canceled') {
++        return;
++      }
++      $o = $arg1;
++      foreach ($o->products as $key => $item) {
++        if ($item->data['wid'] && $item->data['wpid'] && !isset($item->data['wset'])) {
++          $wid = $item->data['wid'];
++          $wpid = $item->data['wpid'];
++          $w = uc_wishlist_load($wid);
++          $witem = uc_wishlist_get_product($wpid);
++          $purchase = array(
++            'order_id' => $item->order_id,
++            'order_product_id' => $item->order_product_id,
++            'uid' => $o->uid,
++            'date' => time(),
++          );
++          for ($i=0; $i<$item->qty; $i++) {
++            $witem->purchase[] = $purchase;
++          }
++          uc_wishlist_update_purchase($witem);
+         }
+-        uc_wishlist_update_purchase($witem);
+       }
+-    }
++      break;
++    
++    case 'load':
++      // Display something friendly on review address if using wishlist address.
++      if (arg(2) == 'review' && $_SESSION['wishlist']['custom_address'] == TRUE) {
++        $o = $arg1;
++        foreach ($o->products as $key => $item) {
++          if ($item->data['wid']) {
++            $wid = $item->data['wid'];
++            $w = uc_wishlist_load($wid);
++          }
++        }
++        $arg1->delivery_first_name = t('[Address from !title]', array('!title' => $w->title));
++      }
++      break;
++
++    case 'submit':
++      // Update db only if custom address is not set.
++      // @see uc_wishlist_checkout_form_validate().
++      if ($_SESSION['wishlist']['custom_address'] == TRUE) {
++        $o = $arg1;
++        foreach ($o->products as $key => $item) {
++          if ($item->data['wid']) {
++            $wid = $item->data['wid'];
++            $w = uc_wishlist_load($wid);
++            $order = array(
++              'delivery_first_name' => $w->address->firstname,
++              'delivery_last_name' => $w->address->lastname,
++              'delivery_company' => $w->address->company,
++              'delivery_street1' => $w->address->addr1,
++              'delivery_street2' => $w->address->addr2,
++              'delivery_city' => $w->address->city,
++              'delivery_country' => $w->address->country,
++              'delivery_zone' => $w->address->zone,
++              'delivery_postal_code' => $w->address->postcode,
++              'delivery_phone' => $w->address->phone,
++            );
++            // Update the DB directly.
++            $order['order_id'] = $o->order_id;
++            drupal_write_record('uc_orders', $order, 'order_id');
++          }
++        }
++      }
++      break;
+   }
+ }
+ 
++/**
++ * Implements Ubercart hook_uc_invoice_templates.
++ */
++function uc_wishlist_uc_invoice_templates() {
++  return array('wishlist');
++}
++
+ 
+ /*******************************************************************************
+  * Callback Functions, Forms, and Tables
+@@ -640,7 +809,9 @@ function uc_wishlist_add_item($nid, $qty = 1, $data = NULL, $wid = NULL, $msg =
+   if (!$wid || $wid === NULL) {
+     $wid = uc_wishlist_create_wishlist();
+     if (!$wid) {
+-      drupal_set_message(t('Could not create wish list. Adding item failed.'), 'error');
++      if (variable_get('uc_wishlist_allow_anonymous', FALSE)) {
++        drupal_set_message(t('Could not create wish list. Adding item failed.'), 'error');
++      }
+       return FALSE;
+     }
+     $created = TRUE;
+diff --git a/uc_wishlist.pages.inc b/uc_wishlist.pages.inc
+index 4cd8197..9272539 100644
+--- a/uc_wishlist.pages.inc
++++ b/uc_wishlist.pages.inc
+@@ -21,6 +21,11 @@ function uc_wishlist_display($wid = NULL, $mode = 'wid') {
+   // $own defines whether the wish list is owned by the current user or not.
+   // This affects how many parts of the page are rendered.
+   $own = FALSE;
++  
++  // Allow users with 'administer wish lists' permission to actually do that.
++  if (user_access('administer wish lists')) {
++    $own = TRUE;
++  }
+ 
+   if ($mode == 'user') {
+     // $wid is actually a user account
+diff --git a/uc_wishlist_checkout.js b/uc_wishlist_checkout.js
+new file mode 100644
+index 0000000..445fdcc
+--- /dev/null
++++ b/uc_wishlist_checkout.js
+@@ -0,0 +1,32 @@
++/**
++ * @file
++ * Small helper JS for the wish list cart form.
++ */
++
++/**
++ * Behavior for our custom address checkbox.
++ *
++ * @todo add comments.
++ */
++Drupal.behaviors.myModuleBehavior = function (context) {
++  cb = $("#edit-panes-delivery-copy-address");
++  ap = $("#delivery-pane div.address-pane-table");
++  bcaw = $("#edit-panes-billing-copy-address-wrapper");
++  bca = $("#edit-panes-billing-copy-address");
++  if (!cb.is(':checked')) { ap.hide();bcaw.hide(); }
++  cb.click(function() {
++    if ($(this).is(':checked')) {
++      ap.slideDown();bcaw.fadeIn();
++    }
++    else {
++      ap.slideUp();
++      $("#delivery-pane div.address-pane-table input").each(function(){ $(this).attr({value:''}); });
++      $("#delivery-pane div.address-pane-table select").not("#edit-panes-delivery-delivery-country").each(function(){ $(this).val($('option:first', this).val()); });      
++      if (bca.is(':checked')) {
++        bca.attr({checked: ''});
++        $("#billing-pane div.address-pane-table").slideDown();
++      }
++      bcaw.fadeOut();
++    }
++  });
++}
+\ No newline at end of file
